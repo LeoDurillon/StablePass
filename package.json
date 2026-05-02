@@ -1,0 +1,27 @@
+{
+  "name": "password_extension",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@happy-dom/global-registrator": "^20.9.0",
+    "@types/bun": "latest",
+    "oxfmt": "^0.47.0",
+    "oxlint": "^1.62.0"
+  },
+  "scripts": {
+    "build": "./build.sh",
+    "test": "bun test --isolate",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": "npm run lint",
+    "*": "oxfmt --no-error-on-unmatched-pattern"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
