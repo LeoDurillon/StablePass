@@ -1,27 +1,52 @@
 {
-  "name": "password_extension",
+  "name": "stable-pass",
   "module": "index.ts",
   "type": "module",
   "private": true,
-  "devDependencies": {
-    "@happy-dom/global-registrator": "^20.9.0",
-    "@types/bun": "latest",
-    "oxfmt": "^0.47.0",
-    "oxlint": "^1.62.0"
-  },
   "scripts": {
     "build": "./build.sh",
-    "test": "bun test --isolate",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "test": "bun test --isolate"
   },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs,cjs}": "npm run lint",
-    "*": "oxfmt --no-error-on-unmatched-pattern"
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalogs": {
+      "tools": {
+        "oxfmt": "0.47.0",
+        "oxlint": "1.62.0"
+      },
+      "ui": {
+        "react": "19.2.5",
+        "react-dom": "19.2.5",
+        "tailwindcss": "4.2.4",
+        "bun-plugin-tailwind": "0.1.2"
+      },
+      "dev": {
+        "@types/bun": "latest",
+        "@types/react": "19.2.5",
+        "@types/react-dom": "19.2.3",
+        "@types/firefox-webext-browser": "143.0.0",
+        "@types/chrome": "0.1.40",
+        "typescript": "6.0.3"
+      },
+      "test": {
+        "@happy-dom/global-registrator": "20.9.0"
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:dev",
+    "oxfmt": "catalog:tools",
+    "oxlint": "catalog:tools",
+    "@happy-dom/global-registrator": "catalog:test"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "catalog:dev"
   }
 }

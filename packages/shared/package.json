@@ -1,0 +1,17 @@
+{
+  "name": "@stable-pass/shared",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@happy-dom/global-registrator": "catalog:test",
+    "@types/bun": "catalog:dev",
+    "@types/firefox-webext-browser": "catalog:dev",
+    "@types/chrome": "catalog:dev",
+    "oxfmt": "catalog:tools",
+    "oxlint": "catalog:tools"
+  },
+  "peerDependencies": {
+    "typescript": "catalog:dev"
+  }
+}

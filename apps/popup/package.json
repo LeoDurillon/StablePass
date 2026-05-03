@@ -1,0 +1,27 @@
+{
+  "name": "@stable-pass/popup",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot src/index.ts",
+    "start": "NODE_ENV=production bun src/index.ts",
+    "build": "bun run build.ts"
+  },
+  "dependencies": {
+    "bun-plugin-tailwind": "catalog:ui",
+    "react": "catalog:ui",
+    "react-dom": "catalog:ui",
+    "tailwindcss": "catalog:ui",
+    "@stable-pass/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "@types/bun": "catalog:dev",
+    "@types/firefox-webext-browser": "catalog:dev",
+    "@types/chrome": "catalog:dev",
+    "oxfmt": "catalog:tools",
+    "oxlint": "catalog:tools"
+  }
+}

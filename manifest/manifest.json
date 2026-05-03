@@ -7,11 +7,18 @@
   "icons": {
     "48": "icon.png"
   },
-  "permissions": ["storage", "<all_urls>"],
+  "permissions": ["storage", "activeTab"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["index.js"]
     }
-  ]
+  ],
+  "page_action": {
+    "browser_style": true,
+    "show_matches": ["<all_urls>"],
+    "default_icon": "icon.png",
+    "default_title": "Stable Pass",
+    "default_popup": "./popup/index.html"
+  }
 }

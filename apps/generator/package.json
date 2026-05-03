@@ -1,0 +1,27 @@
+{
+  "name": "@stable-pass/generator",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@happy-dom/global-registrator": "catalog:test",
+    "@types/bun": "catalog:dev",
+    "@types/firefox-webext-browser": "catalog:dev",
+    "@types/chrome": "catalog:dev",
+    "oxfmt": "catalog:tools",
+    "oxlint": "catalog:tools"
+  },
+  "dependencies": {
+    "@stable-pass/shared": "workspace:*"
+  },
+  "scripts": {
+    "build": "bun build ./index.ts --outdir=out"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": "npm run lint",
+    "*": "oxfmt --no-error-on-unmatched-pattern"
+  },
+  "peerDependencies": {
+    "typescript": "catalog:dev"
+  }
+}
