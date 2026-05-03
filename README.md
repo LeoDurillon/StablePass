@@ -15,6 +15,8 @@ Stable Pass activates as a content script on every page. When you focus on a `in
 
 The same inputs always produce the same output — your passwords are fully reproducible as long as you remember your simple password and haven't rotated.
 
+A **popup** (accessible via the extension icon) shows the current domain and lets you inspect and manually adjust the version counter for that domain.
+
 ---
 
 ## Cryptography
@@ -44,6 +46,7 @@ Passwords are derived using the **Web Crypto API** in a two-step pipeline.
 - Guaranteed to contain at least one: lowercase letter, uppercase letter, digit, special character
 - Characters are selected via **rejection sampling** — no modulo bias, perfectly uniform distribution
 - The character array is **Fisher-Yates shuffled** using the byte stream
+- Results are **cached in memory** per `(domain, value, version)` triple — the KDF never runs twice for the same inputs within a session
 
 ---
 
@@ -52,38 +55,33 @@ Passwords are derived using the **Web Crypto API** in a two-step pipeline.
 - **Same password, different domain** → different complex password (origin is part of the salt)
 - **Same password, different user** → different complex password (user secret is part of the salt)
 - **Password rotation** → incrementing a domain's version produces a completely new password without affecting any other domain
-- **Cross-device sync** → the user secret syncs via `chrome.storage.sync`
+- **Cross-device sync** → the user secret and version counters sync via `chrome.storage.sync`
 - **No server, no account** → nothing leaves the browser
 
 > ⚠️ Back up your user secret. Losing it (e.g. after uninstalling the extension when sync is unavailable) makes all previously generated passwords unrecoverable.
 
 ---
 
-## Project structure
+## Monorepo structure
+
+This repository is a Bun workspace with two apps and one shared package.
 
 ```
-password_extension/
-├── index.ts                   # Entry point — attaches listeners to all password inputs
-├── src/
-│   ├── consts.ts              # Shared constants (iterations, character sets, key names…)
-│   ├── secrets.ts             # User secret: generate on first use, retrieve from sync storage
-│   ├── storage.ts             # Browser storage abstraction (Chrome / Firefox / debug fallback)
-│   ├── versions.ts            # Per-domain version counter (get / increment)
-│   ├── dom/
-│   │   ├── element.ts         # Typed createElement helper
-│   │   └── listeners.ts       # Input event handlers, helper tooltip, refresh button
-│   └── generator/
-│       ├── derive.ts          # Orchestrates the full derivation flow
-│       ├── kdf.ts             # PBKDF2 + HKDF-Expand
-│       └── generator.ts       # Converts byte stream → password string
+stable-pass/
+├── apps/
+│   ├── generator/             # Content script — injected into every page
+│   └── popup/                 # Extension popup — React UI for version management
+├── packages/
+│   └── shared/                # Shared library — storage, secrets, versions, tabs
 ├── manifest/
 │   ├── manifest.json          # Manifest V2 config
 │   └── icon.png
-├── __tests__/                 # Bun test suite (mirrors src/)
-├── build.sh                   # Build script
-├── bunfig.toml                # Bun config (Happy DOM preload for tests)
-└── package.json
+├── out/                       # Final build output (gitignored)
+├── build.sh                   # Root build script
+└── package.json               # Workspace root
 ```
+
+See each package's own README for details on its internals.
 
 ---
 
@@ -96,7 +94,7 @@ The extension stores two keys in `chrome.storage.sync` (or `browser.storage.sync
 | `user_secret` | 64-char hex string, unique per user |
 | `versions` | `{ [origin]: number }` — per-domain rotation counters |
 
-**Debug mode**: if the manifest `name` field contains `" (debug)"`, the extension falls back to `localStorage` instead of browser sync storage. Useful for local development without loading the extension into the browser.
+**Debug mode**: if the manifest `name` field contains `" (debug)"`, the extension uses `chrome.storage.local` instead of `chrome.storage.sync`. This avoids needing a real browser sync account during development while still using the proper extension storage API (unlike `localStorage`, it is accessible from both the content script and the popup).
 
 ---
 
@@ -112,12 +110,33 @@ The extension stores two keys in `chrome.storage.sync` (or `browser.storage.sync
 bun install
 ```
 
-### Commands
+This installs dependencies for all workspace packages at once.
+
+### Build
+
+```sh
+bun run build
+```
+
+Runs `build.sh`, which:
+1. Cleans `out/`
+2. Runs `bun --filter '*' build` to build all packages
+3. Copies `apps/generator/out/*` → `out/`
+4. Copies `apps/popup/dist/*` → `out/popup/`
+5. Copies `manifest/*` → `out/`
+
+### Tests
+
+```sh
+bun test --isolate
+```
+
+Runs the full test suite across all workspace packages. Each test file runs in an isolated module environment.
+
+### Other commands
 
 | Command | Description |
 |---|---|
-| `bun run build` | Bundle `index.ts` with Bun → `out/`, copy `manifest/*` → `out/` |
-| `bun run test` | Run the test suite isolated by default |
 | `bun run lint` | Lint with oxlint |
 | `bun run lint:fix` | Lint and auto-fix |
 | `bun run fmt:check` | Check formatting with oxfmt |
@@ -138,11 +157,14 @@ bun install
 
 ## Tech stack
 
-- **Runtime / bundler**: [Bun](https://bun.sh)
-- **Language**: TypeScript (strict, ESNext)
-- **Tests**: `bun:test` + [Happy DOM](https://github.com/capricorn86/happy-dom)
-- **Linter**: [oxlint](https://oxc.rs/docs/guide/usage/linter)
-- **Formatter**: [oxfmt](https://oxc.rs/docs/guide/usage/formatter)
+| Concern | Tool |
+|---|---|
+| Runtime / bundler | [Bun](https://bun.sh) |
+| Language | TypeScript (strict, ESNext) |
+| Popup UI | React 19 + Tailwind CSS 4 |
+| Tests | `bun:test` + [Happy DOM](https://github.com/capricorn86/happy-dom) |
+| Linter | [oxlint](https://oxc.rs/docs/guide/usage/linter) |
+| Formatter | [oxfmt](https://oxc.rs/docs/guide/usage/formatter) |
 
 ---
 
