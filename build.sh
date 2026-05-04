@@ -12,4 +12,4 @@ cp apps/generator/out/* out/
 
 cp apps/popup/dist/* out/popup/
 
-cp manifest/* out/
+cp -r manifest/* out/
